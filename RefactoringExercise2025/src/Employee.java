@@ -25,7 +25,6 @@ public class Employee implements Serializable {
         this.fullTime = fullTime;
     }
 
-    // Getters and Setters
     public int getEmployeeId() { return employeeId; }
     public void setEmployeeId(int employeeId) { this.employeeId = employeeId; }
     public String getPps() { return pps; }

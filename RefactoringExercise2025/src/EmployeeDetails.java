@@ -1,7 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import net.miginfocom.swing.MigLayout;
 
 public class EmployeeDetails extends JFrame implements ActionListener {
     private RandomFile application = new RandomFile();
@@ -11,8 +13,8 @@ public class EmployeeDetails extends JFrame implements ActionListener {
     private JButton first, previous, next, last, add, edit, deleteButton, displayAll, searchId, searchSurname;
     private Employee currentEmployee;
     private long currentByteStart = 0;
-	private JTextField searchBySurnameField;
-	JTextField searchByIdField;
+    private JTextField searchBySurnameField;
+    private JTextField searchByIdField;
 
     public EmployeeDetails() {
         setTitle("Employee Details");
@@ -23,25 +25,26 @@ public class EmployeeDetails extends JFrame implements ActionListener {
     }
 
     private void createContentPane() {
-        JPanel panel = new JPanel(new GridLayout(6, 2));
-        panel.add(new JLabel("ID:"));
-        panel.add(idField = new JTextField(20));
-        panel.add(new JLabel("PPS Number:"));
-        panel.add(ppsField = new JTextField(20));
-        panel.add(new JLabel("Surname:"));
-        panel.add(surnameField = new JTextField(20));
-        panel.add(new JLabel("First Name:"));
-        panel.add(firstNameField = new JTextField(20));
-        panel.add(new JLabel("Gender:"));
-        panel.add(genderCombo = new JComboBox<>(new String[]{"", "M", "F"}));
-        panel.add(new JLabel("Department:"));
-        panel.add(departmentCombo = new JComboBox<>(new String[]{"", "Administration", "Production", "Transport", "Management"}));
-        panel.add(new JLabel("Salary:"));
-        panel.add(salaryField = new JTextField(20));
-        panel.add(new JLabel("Full Time:"));
-        panel.add(fullTimeCombo = new JComboBox<>(new String[]{"", "Yes", "No"}));
+        JPanel mainPanel = new JPanel(new MigLayout("wrap 2", "[][grow]", "[][][][][][][][][grow]"));
 
-        JPanel buttonPanel = new JPanel();
+        mainPanel.add(new JLabel("ID:"), "align right");
+        mainPanel.add(idField = new JTextField(20), "growx");
+        mainPanel.add(new JLabel("PPS Number:"), "align right");
+        mainPanel.add(ppsField = new JTextField(20), "growx");
+        mainPanel.add(new JLabel("Surname:"), "align right");
+        mainPanel.add(surnameField = new JTextField(20), "growx");
+        mainPanel.add(new JLabel("First Name:"), "align right");
+        mainPanel.add(firstNameField = new JTextField(20), "growx");
+        mainPanel.add(new JLabel("Gender:"), "align right");
+        mainPanel.add(genderCombo = new JComboBox<>(new String[]{"", "M", "F"}), "growx");
+        mainPanel.add(new JLabel("Department:"), "align right");
+        mainPanel.add(departmentCombo = new JComboBox<>(new String[]{"", "Administration", "Production", "Transport", "Management"}), "growx");
+        mainPanel.add(new JLabel("Salary:"), "align right");
+        mainPanel.add(salaryField = new JTextField(20), "growx");
+        mainPanel.add(new JLabel("Full Time:"), "align right");
+        mainPanel.add(fullTimeCombo = new JComboBox<>(new String[]{"", "Yes", "No"}), "growx");
+
+        JPanel buttonPanel = new JPanel(new MigLayout("insets 0", "[][][][][][][][][]", "[]"));
         buttonPanel.add(first = new JButton("First"));
         buttonPanel.add(previous = new JButton("Previous"));
         buttonPanel.add(next = new JButton("Next"));
@@ -53,9 +56,6 @@ public class EmployeeDetails extends JFrame implements ActionListener {
         buttonPanel.add(searchId = new JButton("Search by ID"));
         buttonPanel.add(searchSurname = new JButton("Search by Surname"));
 
-        add(panel, BorderLayout.CENTER);
-        add(buttonPanel, BorderLayout.SOUTH);
-
         first.addActionListener(this);
         previous.addActionListener(this);
         next.addActionListener(this);
@@ -66,6 +66,9 @@ public class EmployeeDetails extends JFrame implements ActionListener {
         displayAll.addActionListener(this);
         searchId.addActionListener(this);
         searchSurname.addActionListener(this);
+
+        add(mainPanel, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
     }
 
     @Override
@@ -81,7 +84,6 @@ public class EmployeeDetails extends JFrame implements ActionListener {
         } else if (e.getSource() == searchId) {
             searchById();
         } else if (e.getSource() == searchSurname) {
-            // Prompt user for surname and call method
             String surname = JOptionPane.showInputDialog(this, "Enter Surname:");
             if (surname != null && !surname.isEmpty()) {
                 searchEmployeeBySurname(surname);
@@ -97,7 +99,6 @@ public class EmployeeDetails extends JFrame implements ActionListener {
         }
     }
 
-    // Add Record
     public void addRecord() {
         AddRecordDialog addDialog = new AddRecordDialog(this);
         addDialog.setVisible(true);
@@ -110,7 +111,6 @@ public class EmployeeDetails extends JFrame implements ActionListener {
         refreshDisplay();
     }
 
-    // Edit Record
     private void editRecord() {
         if (currentEmployee != null) {
             AddRecordDialog editDialog = new AddRecordDialog(this);
@@ -122,7 +122,6 @@ public class EmployeeDetails extends JFrame implements ActionListener {
         }
     }
 
-    // Delete Record
     private void deleteRecord() {
         if (currentEmployee != null) {
             int confirm = JOptionPane.showConfirmDialog(this, "Delete this record?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
@@ -134,7 +133,6 @@ public class EmployeeDetails extends JFrame implements ActionListener {
         }
     }
 
-    // Display All Records
     private void displayAllRecords() {
         StringBuilder allRecords = new StringBuilder();
         application.openReadFile(file.getAbsolutePath());
@@ -147,7 +145,6 @@ public class EmployeeDetails extends JFrame implements ActionListener {
         JOptionPane.showMessageDialog(this, allRecords.toString(), "All Records", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    // Search by ID
     private void searchById() {
         String searchId = JOptionPane.showInputDialog(this, "Enter Employee ID:");
         if (searchId != null && !searchId.isEmpty()) {
@@ -162,12 +159,11 @@ public class EmployeeDetails extends JFrame implements ActionListener {
         }
     }
 
-    // Search by Surname
     public void searchEmployeeBySurname(String surname) {
         application.openReadFile(file.getAbsolutePath());
         Employee emp = application.readRecords(application.getFirst());
         boolean found = false;
-        
+
         while (emp != null && !found) {
             if (emp.getSurname().equalsIgnoreCase(surname)) {
                 displayRecords(emp);
@@ -175,26 +171,13 @@ public class EmployeeDetails extends JFrame implements ActionListener {
             }
             emp = application.readRecords(application.getNext(currentByteStart));
         }
-        
+
         application.closeReadFile();
         if (!found) {
             JOptionPane.showMessageDialog(this, "Record not found!", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-    
-    public void searchEmployeeById(int id) {
-        application.openReadFile(file.getAbsolutePath());
-        Employee found = application.findRecord(id);
-        application.closeReadFile();
-        
-        if (found != null) {
-            displayRecords(found);
-        } else {
-            JOptionPane.showMessageDialog(this, "Record not found!", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
 
-    // Navigation Methods
     private void firstRecord() {
         currentByteStart = application.getFirst();
         refreshDisplay();
@@ -215,7 +198,6 @@ public class EmployeeDetails extends JFrame implements ActionListener {
         refreshDisplay();
     }
 
-    // Helper Methods
     private void refreshDisplay() {
         application.openReadFile(file.getAbsolutePath());
         displayRecords(application.readRecords(currentByteStart));

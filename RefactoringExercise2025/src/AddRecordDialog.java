@@ -87,7 +87,7 @@ public class AddRecordDialog extends JDialog implements ActionListener {
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Invalid numeric format!", "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }
+    } 
 
     private boolean validateInput(String pps, String surname, String firstName, double salary) {
         if (pps.isEmpty() || surname.isEmpty() || firstName.isEmpty()) {

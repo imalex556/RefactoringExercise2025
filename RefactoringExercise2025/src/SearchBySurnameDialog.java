@@ -1,85 +1,49 @@
-/*
- * 
- * This is a dialog for searching Employees by their surname.
- * 
- * */
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
-import java.awt.Container;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+public class SearchBySurnameDialog extends JDialog implements ActionListener {
+    private JTextField searchField;
+    private JButton search, cancel;
+    private EmployeeDetails parent;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.border.EtchedBorder;
+    public SearchBySurnameDialog(EmployeeDetails parent) {
+        super(parent, "Search by Surname", true);
+        this.parent = parent;
+        setSize(300, 150);
+        setLocationRelativeTo(parent);
+        createContentPane();
+        setVisible(true);
+    }
 
-public class SearchBySurnameDialog extends JDialog implements ActionListener{
-	EmployeeDetails parent;
-	JButton search, cancel;
-	JTextField searchField;
-	// constructor for search by surname dialog
-	public SearchBySurnameDialog(EmployeeDetails parent) {
-		setTitle("Search by Surname");
-		setModal(true);
-		this.parent = parent;
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    private void createContentPane() {
+        JPanel panel = new JPanel(new GridLayout(2, 2));
+        panel.add(new JLabel("Enter Surname:"));
+        panel.add(searchField = new JTextField(20));
 
-		JScrollPane scrollPane = new JScrollPane(searchPane());
-		setContentPane(scrollPane);
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(search = new JButton("Search"));
+        buttonPanel.add(cancel = new JButton("Cancel"));
 
-		getRootPane().setDefaultButton(search);
-		
-		setSize(500, 190);
-		setLocation(350, 250);
-		setVisible(true);
-	}// end SearchBySurnameDialog
-	
-	// initialize search container
-	public Container searchPane() {
-		JPanel searchPanel = new JPanel(new GridLayout(3,1));
-		JPanel textPanel = new JPanel();
-		JPanel buttonPanel = new JPanel();
-		JLabel searchLabel;
+        add(panel, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
 
-		searchPanel.add(new JLabel("Search by Surname"));
-	
-		textPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-		textPanel.add(searchLabel = new JLabel("Enter Surname:"));
-		searchLabel.setFont(this.parent.font1);
-		textPanel.add(searchField = new JTextField(20));
-		searchField.setFont(this.parent.font1);
-		searchField.setDocument(new JTextFieldLimit(20));
+        search.addActionListener(this);
+        cancel.addActionListener(this);
+    }
 
-		buttonPanel.add(search = new JButton("Search"));
-		search.addActionListener(this);
-		search.requestFocus();
-		
-		buttonPanel.add(cancel = new JButton("Cancel"));
-		cancel.addActionListener(this);
-		
-		searchPanel.add(textPanel);
-		searchPanel.add(buttonPanel);
-
-		return searchPanel;
-	}// end searchPane
-
-	// action listener for save and cancel button
-	public void actionPerformed(ActionEvent e) {
-		// if option search, search for Employee
-		if(e.getSource() == search){
-			this.parent.searchBySurnameField.setText(searchField.getText());
-			// search Employee by surname
-			this.parent.searchEmployeeBySurname();
-			dispose();// dispose dialog
-		}// end if
-		// else dispose dialog
-		else if(e.getSource() == cancel)
-			dispose();// dispose dialog
-	}// end actionPerformed
-}// end class SearchBySurnameDialog
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == search) {
+            String surname = searchField.getText().trim();
+            if (!surname.isEmpty()) {
+                parent.searchEmployeeBySurname(surname);
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Please enter a surname to search!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else if (e.getSource() == cancel) {
+            dispose();
+        }
+    }
+}
