@@ -112,4 +112,14 @@ public class RandomFile {
             JOptionPane.showMessageDialog(null, "Error deleting record!");
         }
     }
+    
+    public void createFile(String fileName) {
+        try {
+            output = new RandomAccessFile(fileName, "rw");
+            output.setLength(0);
+            output.close();
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Error creating file!");
+        }
+    }
 }

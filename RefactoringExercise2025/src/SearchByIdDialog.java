@@ -44,7 +44,6 @@ public class SearchByIdDialog extends JDialog implements ActionListener {
     private void searchById() {
         try {
             int id = Integer.parseInt(searchField.getText());
-            parent.searchByIdField.setText(searchField.getText());
             parent.searchEmployeeById(id);
             dispose();
         } catch (NumberFormatException ex) {

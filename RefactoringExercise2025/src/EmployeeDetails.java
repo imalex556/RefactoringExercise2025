@@ -3,6 +3,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import net.miginfocom.swing.MigLayout;
 
 public class EmployeeDetails extends JFrame implements ActionListener {
@@ -10,18 +13,85 @@ public class EmployeeDetails extends JFrame implements ActionListener {
     private File file;
     private JTextField idField, ppsField, surnameField, firstNameField, salaryField;
     private JComboBox<String> genderCombo, departmentCombo, fullTimeCombo;
-    private JButton first, previous, next, last, add, edit, deleteButton, displayAll, searchId, searchSurname;
     private Employee currentEmployee;
     private long currentByteStart = 0;
     private JTextField searchBySurnameField;
     private JTextField searchByIdField;
+    private boolean changesMade = false;
 
     public EmployeeDetails() {
         setTitle("Employee Details");
         setSize(800, 600);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        createMenuBar();
         createContentPane();
         setVisible(true);
+    }
+
+    private void createMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu navigateMenu = new JMenu("Navigate");
+        JMenuItem firstItem = new JMenuItem("First");
+        JMenuItem previousItem = new JMenuItem("Previous");
+        JMenuItem nextItem = new JMenuItem("Next");
+        JMenuItem lastItem = new JMenuItem("Last");
+        JMenuItem searchByIdItem = new JMenuItem("Search by ID");
+        JMenuItem searchBySurnameItem = new JMenuItem("Search by Surname");
+        JMenuItem listAllItem = new JMenuItem("List All");
+
+        firstItem.addActionListener(this);
+        previousItem.addActionListener(this);
+        nextItem.addActionListener(this);
+        lastItem.addActionListener(this);
+        searchByIdItem.addActionListener(this);
+        searchBySurnameItem.addActionListener(this);
+        listAllItem.addActionListener(this);
+
+        navigateMenu.add(firstItem);
+        navigateMenu.add(previousItem);
+        navigateMenu.add(nextItem);
+        navigateMenu.add(lastItem);
+        navigateMenu.addSeparator();
+        navigateMenu.add(searchByIdItem);
+        navigateMenu.add(searchBySurnameItem);
+        navigateMenu.add(listAllItem);
+
+        JMenu recordsMenu = new JMenu("Records");
+        JMenuItem createItem = new JMenuItem("Create");
+        JMenuItem modifyItem = new JMenuItem("Modify");
+        JMenuItem deleteItem = new JMenuItem("Delete");
+
+        createItem.addActionListener(this);
+        modifyItem.addActionListener(this);
+        deleteItem.addActionListener(this);
+
+        recordsMenu.add(createItem);
+        recordsMenu.add(modifyItem);
+        recordsMenu.add(deleteItem);
+
+        JMenu fileMenu = new JMenu("File");
+        JMenuItem openItem = new JMenuItem("Open");
+        JMenuItem saveItem = new JMenuItem("Save");
+        JMenuItem saveAsItem = new JMenuItem("Save As");
+        JMenuItem exitItem = new JMenuItem("Exit");
+
+        openItem.addActionListener(this);
+        saveItem.addActionListener(this);
+        saveAsItem.addActionListener(this);
+        exitItem.addActionListener(this);
+
+        fileMenu.add(openItem);
+        fileMenu.add(saveItem);
+        fileMenu.add(saveAsItem);
+        fileMenu.addSeparator();
+        fileMenu.add(exitItem);
+
+        menuBar.add(navigateMenu);
+        menuBar.add(recordsMenu);
+        menuBar.add(fileMenu);
+
+        setJMenuBar(menuBar);
     }
 
     private void createContentPane() {
@@ -44,58 +114,112 @@ public class EmployeeDetails extends JFrame implements ActionListener {
         mainPanel.add(new JLabel("Full Time:"), "align right");
         mainPanel.add(fullTimeCombo = new JComboBox<>(new String[]{"", "Yes", "No"}), "growx");
 
-        JPanel buttonPanel = new JPanel(new MigLayout("insets 0", "[][][][][][][][][]", "[]"));
-        buttonPanel.add(first = new JButton("First"));
-        buttonPanel.add(previous = new JButton("Previous"));
-        buttonPanel.add(next = new JButton("Next"));
-        buttonPanel.add(last = new JButton("Last"));
-        buttonPanel.add(add = new JButton("Add"));
-        buttonPanel.add(edit = new JButton("Edit"));
-        buttonPanel.add(deleteButton = new JButton("Delete"));
-        buttonPanel.add(displayAll = new JButton("Display All"));
-        buttonPanel.add(searchId = new JButton("Search by ID"));
-        buttonPanel.add(searchSurname = new JButton("Search by Surname"));
-
-        first.addActionListener(this);
-        previous.addActionListener(this);
-        next.addActionListener(this);
-        last.addActionListener(this);
-        add.addActionListener(this);
-        edit.addActionListener(this);
-        deleteButton.addActionListener(this);
-        displayAll.addActionListener(this);
-        searchId.addActionListener(this);
-        searchSurname.addActionListener(this);
-
         add(mainPanel, BorderLayout.CENTER);
-        add(buttonPanel, BorderLayout.SOUTH);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == add) {
-            addRecord();
-        } else if (e.getSource() == edit) {
-            editRecord();
-        } else if (e.getSource() == deleteButton) {
-            deleteRecord();
-        } else if (e.getSource() == displayAll) {
-            displayAllRecords();
-        } else if (e.getSource() == searchId) {
-            searchById();
-        } else if (e.getSource() == searchSurname) {
-            String surname = JOptionPane.showInputDialog(this, "Enter Surname:");
-            if (surname != null && !surname.isEmpty()) {
-                searchEmployeeBySurname(surname);
-            }
-        } else if (e.getSource() == first) {
+        String command = e.getActionCommand();
+
+        switch (command) {
+            case "First":
+                firstRecord();
+                break;
+            case "Previous":
+                previousRecord();
+                break;
+            case "Next":
+                nextRecord();
+                break;
+            case "Last":
+                lastRecord();
+                break;
+            case "Search by ID":
+                searchById();
+                break;
+            case "Search by Surname":
+                String surname = JOptionPane.showInputDialog(this, "Enter Surname:");
+                if (surname != null && !surname.isEmpty()) {
+                    searchEmployeeBySurname(surname);
+                }
+                break;
+            case "List All":
+                displayAllRecords();
+                break;
+            case "Create":
+                addRecord();
+                break;
+            case "Modify":
+                editRecord();
+                break;
+            case "Delete":
+                deleteRecord();
+                break;
+            case "Open":
+                openFile();
+                break;
+            case "Save":
+                saveFile();
+                break;
+            case "Save As":
+                saveFileAs();
+                break;
+            case "Exit":
+                exitApp();
+                break;
+        }
+    }
+
+    private void openFile() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("DAT files (*.dat)", "dat"));
+        int returnValue = fileChooser.showOpenDialog(this);
+
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            file = fileChooser.getSelectedFile();
+            application.openReadFile(file.getAbsolutePath());
             firstRecord();
-        } else if (e.getSource() == previous) {
-            previousRecord();
-        } else if (e.getSource() == next) {
-            nextRecord();
-        } else if (e.getSource() == last) {
-            lastRecord();
+            application.closeReadFile();
+        }
+    }
+
+    private void saveFile() {
+        if (file == null) {
+            saveFileAs();
+        } else {
+            application.openWriteFile(file.getAbsolutePath());
+            application.closeWriteFile();
+            changesMade = false;
+            JOptionPane.showMessageDialog(this, "File saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void saveFileAs() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("DAT files (*.dat)", "dat"));
+        int returnValue = fileChooser.showSaveDialog(this);
+
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            file = fileChooser.getSelectedFile();
+            if (!file.getName().endsWith(".dat")) {
+                file = new File(file.getAbsolutePath() + ".dat");
+            }
+            application.createFile(file.getAbsolutePath());
+            saveFile();
+        }
+    }
+
+    private void exitApp() {
+        if (changesMade) {
+            int option = JOptionPane.showConfirmDialog(this, "Do you want to save changes before exiting?", "Save Changes", JOptionPane.YES_NO_CANCEL_OPTION);
+            if (option == JOptionPane.YES_OPTION) {
+                saveFile();
+                System.exit(0);
+            } else if (option == JOptionPane.NO_OPTION) {
+                System.exit(0);
+            }
+        } else {
+            System.exit(0);
         }
     }
 
@@ -214,6 +338,18 @@ public class EmployeeDetails extends JFrame implements ActionListener {
             departmentCombo.setSelectedItem(emp.getDepartment());
             salaryField.setText(String.valueOf(emp.getSalary()));
             fullTimeCombo.setSelectedItem(emp.isFullTime() ? "Yes" : "No");
+        }
+    }
+    
+    public void searchEmployeeById(int id) {
+        application.openReadFile(file.getAbsolutePath());
+        Employee found = application.findRecord(id);
+        application.closeReadFile();
+
+        if (found != null) {
+            displayRecords(found);
+        } else {
+            JOptionPane.showMessageDialog(this, "Record not found!", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
