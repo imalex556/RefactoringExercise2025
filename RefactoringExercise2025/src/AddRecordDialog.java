@@ -55,7 +55,7 @@ public class AddRecordDialog extends JDialog implements ActionListener {
         genderCombo.setSelectedItem(String.valueOf(employee.getGender()));
         departmentCombo.setSelectedItem(employee.getDepartment());
         salaryField.setText(String.valueOf(employee.getSalary()));
-        fullTimeCombo.setSelectedItem(employee.getFullTime() ? "Yes" : "No");
+        fullTimeCombo.setSelectedItem(employee.isFullTime() ? "Yes" : "No");
     }
 
     @Override
